@@ -337,23 +337,31 @@ async def create_payment(req_body: CreatePaymentRequest, authorization: str = He
     }
     save_payments(payments)
 
+    print(f"[TSPAY] APP_URL={APP_URL} WEBHOOK_URL={TSPAY_WEBHOOK_URL}")
+
     try:
+        payload = {
+            "merchant_id": TSPAY_MERCHANT_ID,
+            "amount": 70000,
+            "order_id": order_id,
+            "redirect_url": APP_URL,
+            "webhook_url": TSPAY_WEBHOOK_URL,
+        }
+        print(f"[TSPAY] payload={payload}")
+
         resp = tspay_session.post(
             TSPAY_API_URL,
-            json={
-                "merchant_id": TSPAY_MERCHANT_ID,
-                "amount": 70000,
-                "order_id": order_id,
-                "redirect_url": APP_URL,
-                "webhook_url": TSPAY_WEBHOOK_URL,
-            },
+            json=payload,
             headers={
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                "User-Agent": "Mozilla/5.0",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {TSPAY_API_KEY}",
-            }
+            },
+            timeout=30,
         )
+
+        print(f"[TSPAY] response status={resp.status_code} body={resp.text}")
 
         if resp.status_code == 200:
             data = resp.json()
@@ -366,7 +374,7 @@ async def create_payment(req_body: CreatePaymentRequest, authorization: str = He
                 return {"ok": True, "payment_url": payment_url, "order_id": str_order_id, "cheque_id": cheque_id}
             return JSONResponse({"error": "No payment URL in response", "details": data}, status_code=400)
         else:
-            return JSONResponse({"error": f"TSPay API error: {resp.text}"}, status_code=resp.status_code)
+            return JSONResponse({"error": f"TSPay API error: {resp.text}", "webhook_url": TSPAY_WEBHOOK_URL}, status_code=resp.status_code)
 
     except Exception as e:
         return JSONResponse({"error": f"TSPay error: {str(e)}"}, status_code=500)
