@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: subflow-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: APP_URL
+        sync: false
+      - key: TSPAY_MERCHANT_ID
+        sync: false
+      - key: TSPAY_API_KEY
+        sync: false
+      - key: TSPAY_WEBHOOK_SECRET
+        sync: false

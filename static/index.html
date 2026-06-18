@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SubFlow — AI Subtitle Translator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=8">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo">
+        <div class="logo-mark">SF</div>
+        <span class="logo-text">SubFlow</span>
+        <span class="logo-tag">BETA</span>
+      </div>
+      <div class="nav-links">
+        <a href="#app">Translator</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="nav-actions">
+        <div class="engine-switch">
+          <button class="es-btn active" id="engineFree" data-e="free">
+            <span class="es-dot es-green"></span>Free
+          </button>
+          <button class="es-btn" id="enginePro" data-e="pro">
+            <span class="es-dot es-purple"></span>Pro
+          </button>
+        </div>
+        <div class="nav-auth" id="navAuth">
+          <button class="btn-text" id="navSignin">Sign In</button>
+          <button class="btn-glow" id="navSignup">Sign Up</button>
+        </div>
+        <div class="nav-user" id="navUser" style="display:none">
+          <span class="nu-name" id="navUserName"></span>
+          <span class="nu-plan" id="navUserPlan">Pro</span>
+          <button class="btn-text" id="navSubBtn">Manage</button>
+          <button class="btn-text" id="navSignout">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="hero-badge">✦ AI-Powered Translation Engine</div>
+      <h1 class="hero-title">
+        <span class="line-1">Translate</span>
+        <span class="line-2">subtitles</span>
+        <span class="line-3">instantly.</span>
+      </h1>
+      <p class="hero-desc">
+        Upload SRT or ASS files. Pick a language. Get translated subtitles in seconds.<br>
+        Powered by DeepL & Google Translate.
+      </p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-val">10+</span><span class="stat-lbl">Languages</span></div>
+        <div class="stat"><span class="stat-val">2x</span><span class="stat-lbl">Faster</span></div>
+        <div class="stat"><span class="stat-val">100%</span><span class="stat-lbl">Free</span></div>
+      </div>
+    </section>
+
+    <section class="app" id="app">
+      <div class="app-wrapper">
+        <div class="app-sidebar">
+          <div class="sb-section">
+            <div class="sb-label"><span class="sb-dot sb-dot-blue"></span>TARGET LANGUAGE</div>
+            <select id="targetLang" class="sb-select">
+              <option value="uz">🇺🇿 O'zbekcha</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="ru">🇷🇺 Русский</option>
+              <option value="tr">🇹🇷 Türkçe</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="ar">🇸🇦 العربية</option>
+              <option value="zh">🇨🇳 中文</option>
+              <option value="ko">🇰🇷 한국어</option>
+            </select>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label"><span class="sb-dot sb-dot-orange"></span>ENGINE</div>
+            <div class="engine-info" id="engineInfo">
+              <span class="ei-icon">⚡</span>
+              <div>
+                <div class="ei-name">Google Translate</div>
+                <div class="ei-desc">Free · Unlimited</div>
+              </div>
+            </div>
+          </div>
+          <div class="sb-section" id="usageBox" style="display:none">
+            <div class="sb-label"><span class="sb-dot sb-dot-red"></span>API USAGE</div>
+            <div class="usage-ring" id="usageRing">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#grad)" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round" id="usageCircle"/>
+                <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%"><stop offset="0%" stop-color="#111111"/><stop offset="100%" stop-color="#111111"/></linearGradient></defs>
+              </svg>
+              <div class="usage-center">
+                <span class="usage-pct" id="usagePct">0%</span>
+                <span class="usage-sub" id="usageSub">of 1M chars</span>
+              </div>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label"><span class="sb-dot sb-dot-green"></span>HOW IT WORKS</div>
+            <div class="how-steps">
+              <div class="hs"><span class="hs-num">01</span>Drop your files</div>
+              <div class="hs"><span class="hs-num">02</span>Pick a language</div>
+              <div class="hs"><span class="hs-num">03</span>Download result</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-main">
+          <label class="dropzone" id="uploadArea">
+            <input type="file" id="fileInput" accept=".srt,.ass" multiple hidden>
+            <div class="dz-content">
+              <div class="dz-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <p class="dz-title">Drop subtitle files here</p>
+              <p class="dz-sub">or click to browse · .srt / .ass · up to 10 files</p>
+            </div>
+          </label>
+
+          <div class="file-queue" id="fileQueue" style="display:none">
+            <div class="fq-header">
+              <span class="fq-title">Files</span>
+              <button class="fq-clear" id="clearFiles">Clear all</button>
+            </div>
+            <div class="fq-list" id="fqList"></div>
+          </div>
+
+          <button class="translate-btn" id="translateBtn" disabled>
+            <span class="tb-text" id="btnText">Translate Now</span>
+            <span class="tb-spinner" id="btnSpinner"></span>
+          </button>
+
+          <div class="progress-box" id="progressBox" style="display:none">
+            <div class="pb-top">
+              <span class="pb-pct" id="pbPct">0%</span>
+              <span class="pb-eta" id="pbEta"></span>
+            </div>
+            <div class="pb-bar"><div class="pb-fill" id="pbFill"></div></div>
+            <p class="pb-text" id="pbText">Preparing...</p>
+            <div class="pb-files" id="pbFiles"></div>
+          </div>
+
+          <div class="result-box" id="resultBox" style="display:none"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <h2 class="sec-title">Built for subtitle creators</h2>
+      <p class="sec-sub">Everything you need to translate subtitles at scale.</p>
+      <div class="feat-grid">
+        <div class="feat-card fc-purple">
+          <div class="fc-icon">🌐</div>
+          <h3>10+ Languages</h3>
+          <p>English, Russian, Uzbek, Turkish, German, French, Spanish, Arabic, Chinese, Korean — and more coming.</p>
+        </div>
+        <div class="feat-card fc-cyan">
+          <div class="fc-icon">⚡</div>
+          <h3>Batch Processing</h3>
+          <p>Upload up to 10 subtitle files at once. Translate them all in a single run with real-time progress.</p>
+        </div>
+        <div class="feat-card fc-amber">
+          <div class="fc-icon">✦</div>
+          <h3>Dual Engine</h3>
+          <p>Free: Google Translate (unlimited). Pro: DeepL AI (best quality). Switch anytime.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+      <h2 class="sec-title">Simple pricing</h2>
+      <p class="sec-sub">Start free. Upgrade when you need more power.</p>
+      <div class="price-grid">
+        <div class="price-card">
+          <div class="pc-tag">Free</div>
+          <div class="pc-price">$0</div>
+          <div class="pc-period">forever</div>
+          <ul class="pc-list">
+            <li>✓ Unlimited translations</li>
+            <li>✓ Google Translate</li>
+            <li>✓ SRT & ASS support</li>
+            <li>✓ 10 files at once</li>
+          </ul>
+          <button class="pc-btn">Get Started</button>
+        </div>
+        <div class="price-card pc-featured">
+          <div class="pc-badge">Most Popular</div>
+          <div class="pc-tag">Pro</div>
+          <div class="pc-price">$5.49</div>
+          <div class="pc-period">/month</div>
+          <ul class="pc-list">
+            <li>✓ 1M characters/month</li>
+            <li>✓ DeepL AI engine</li>
+            <li>✓ Auto-fallback</li>
+            <li>✓ Priority speed</li>
+          </ul>
+          <button class="pc-btn pc-btn-glow">Subscribe ⚡</button>
+        </div>
+        <div class="price-card">
+          <div class="pc-tag">Business</div>
+          <div class="pc-price">$19.99</div>
+          <div class="pc-period">/month</div>
+          <ul class="pc-list">
+            <li>✓ Unlimited characters</li>
+            <li>✓ DeepL + Google</li>
+            <li>✓ API access</li>
+            <li>✓ Priority support</li>
+          </ul>
+          <button class="pc-btn">Contact Sales</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo"><div class="logo-mark">SF</div><span class="logo-text">SubFlow</span></div>
+        <p>AI-powered subtitle translation for global creators.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#">Translator</a>
+        <a href="#">API</a>
+        <a href="#">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="#">Blog</a>
+        <a href="#">Docs</a>
+        <a href="#">Support</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 SubFlow. All rights reserved.</div>
+  </footer>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="authModal" style="display:none">
+    <div class="modal">
+      <button class="modal-close" id="authClose">✕</button>
+      <div class="modal-tabs">
+        <button class="mtab active" id="tabSignin">Sign In</button>
+        <button class="mtab" id="tabSignup">Sign Up</button>
+      </div>
+      <form class="mform" id="signinForm">
+        <div class="mfield">
+          <label>Email</label>
+          <input type="email" id="siEmail" placeholder="you@email.com" required>
+        </div>
+        <div class="mfield">
+          <label>Password</label>
+          <input type="password" id="siPass" placeholder="••••••••" required>
+        </div>
+        <div class="merr" id="siErr"></div>
+        <button type="submit" class="mbtn mbtn-dark">Sign In</button>
+      </form>
+      <form class="mform" id="signupForm" style="display:none">
+        <div class="mfield">
+          <label>Name</label>
+          <input type="text" id="suName" placeholder="Your name" required>
+        </div>
+        <div class="mfield">
+          <label>Email</label>
+          <input type="email" id="suEmail" placeholder="you@email.com" required>
+        </div>
+        <div class="mfield">
+          <label>Password</label>
+          <input type="password" id="suPass" placeholder="Min. 6 characters" required minlength="6">
+        </div>
+        <div class="merr" id="suErr"></div>
+        <button type="submit" class="mbtn mbtn-dark">Create Account</button>
+        <p class="mnote">Create account to get started. Subscribe to unlock Pro.</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" id="payModal" style="display:none">
+    <div class="modal modal-pay">
+      <button class="modal-close" id="payClose">✕</button>
+      <div class="pay-header">
+        <div class="pay-plan-badge">PRO</div>
+        <h3>Upgrade to Pro</h3>
+        <p>DeepL AI engine · 1M characters/month · Auto-renew</p>
+      </div>
+      <div class="pay-price">
+        <span class="pay-amount">$5.49</span>
+        <span class="pay-period">/month</span>
+      </div>
+      <div class="pay-info">
+        <div class="pay-info-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Secure payment via TSPay</span>
+        </div>
+        <div class="pay-info-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Auto-renews every 30 days</span>
+        </div>
+        <div class="pay-info-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Cancel anytime</span>
+        </div>
+      </div>
+      <div class="merr" id="payErr"></div>
+      <button class="mbtn mbtn-dark" id="payBtn" onclick="startTspayPayment()">
+        Pay $5.49 with TSPay
+      </button>
+      <p class="mnote">You will be redirected to TSPay to complete payment</p>
+    </div>
+  </div>
+
+  <!-- Subscription Modal -->
+  <div class="modal-overlay" id="subModal" style="display:none">
+    <div class="modal modal-sub">
+      <button class="modal-close" id="subClose">✕</button>
+      <h3>Your Subscription</h3>
+      <div class="sub-status" id="subStatus"></div>
+      <div class="sub-usage" id="subUsage"></div>
+      <div class="sub-details" id="subDetails"></div>
+      <div class="sub-actions" id="subActions"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=8"></script>
+</body>
+</html>
