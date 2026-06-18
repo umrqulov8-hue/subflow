@@ -43,6 +43,11 @@ USERS_FILE = Path("users.json")
 PAYMENTS_FILE = Path("payments.json")
 
 app = FastAPI(title="Subtitle AI")
+
+@app.on_event("startup")
+async def startup():
+    load_payments()
+    load_users()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -56,27 +61,57 @@ supabase_session = req.Session()
 tspay_session = req.Session()
 
 
-# ─── Data Helpers ───
+# ─── Data Helpers (with in-memory cache) ───
 
-def load_json(path: Path) -> dict:
+_cache: dict = {"payments": None, "payments_mtime": 0.0, "users": None, "users_mtime": 0.0}
+
+def _read_json(path: Path) -> dict:
     if path.exists():
         return json.loads(path.read_text())
     return {}
 
-def save_json(path: Path, data: dict):
+def _write_json(path: Path, data: dict):
     path.write_text(json.dumps(data, indent=2))
 
-def load_users() -> dict:
-    return load_json(USERS_FILE)
-
-def save_users(users: dict):
-    save_json(USERS_FILE, users)
-
 def load_payments() -> dict:
-    return load_json(PAYMENTS_FILE)
+    try:
+        mtime = PAYMENTS_FILE.stat().st_mtime if PAYMENTS_FILE.exists() else 0
+        if _cache["payments"] is not None and mtime == _cache["payments_mtime"]:
+            return _cache["payments"]
+        data = _read_json(PAYMENTS_FILE)
+        _cache["payments"] = data
+        _cache["payments_mtime"] = mtime
+        return data
+    except Exception:
+        return _cache["payments"] or {}
 
 def save_payments(payments: dict):
-    save_json(PAYMENTS_FILE, payments)
+    _write_json(PAYMENTS_FILE, payments)
+    _cache["payments"] = payments
+    try:
+        _cache["payments_mtime"] = PAYMENTS_FILE.stat().st_mtime
+    except Exception:
+        pass
+
+def load_users() -> dict:
+    try:
+        mtime = USERS_FILE.stat().st_mtime if USERS_FILE.exists() else 0
+        if _cache["users"] is not None and mtime == _cache["users_mtime"]:
+            return _cache["users"]
+        data = _read_json(USERS_FILE)
+        _cache["users"] = data
+        _cache["users_mtime"] = mtime
+        return data
+    except Exception:
+        return _cache["users"] or {}
+
+def save_users(users: dict):
+    _write_json(USERS_FILE, users)
+    _cache["users"] = users
+    try:
+        _cache["users_mtime"] = USERS_FILE.stat().st_mtime
+    except Exception:
+        pass
 
 
 # ─── Supabase Auth Helpers ───
@@ -631,3 +666,13 @@ async def download_file(filename: str):
     if file_path.exists():
         return FileResponse(file_path, filename=f"translated_{filename.replace('_translated', '')}", media_type="text/plain")
     return HTMLResponse(status_code=404)
+
+
+@app.get("/health")
+async def health():
+    return {"ok": True, "time": time.time()}
+
+
+@app.get("/ping")
+async def ping():
+    return "pong"
