@@ -4,3 +4,4 @@ python-multipart
 deep-translator
 deepl
 requests
+tspay-client
