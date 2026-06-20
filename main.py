@@ -227,6 +227,8 @@ async def tspay_webhook(request: Request):
         params = body.get("params", {})
         method = body.get("method", "")
 
+        print(f"[TSPAY-WEBHOOK] method={method} params={params} sig={sig}")
+
         if not params or not method:
             return JSONResponse({"allow": False, "reason": "Invalid request structure"}, status_code=400)
 
@@ -242,9 +244,11 @@ async def tspay_webhook(request: Request):
         ).hexdigest()
 
         if not hmac.compare_digest(sig, expected):
+            print(f"[TSPAY-WEBHOOK] SIG MISMATCH expected={expected} got={sig}")
             return JSONResponse({"allow": False, "reason": "Invalid signature"}, status_code=401)
 
         payments = load_payments()
+        print(f"[TSPAY-WEBHOOK] looking for order_id={order_id} in {list(payments.keys())[:5]}")
 
         if method == "checkPerform":
             order = payments.get(order_id)
@@ -304,6 +308,8 @@ async def tspay_webhook(request: Request):
         return JSONResponse({"allow": False, "reason": "Noma'lum metod"}, status_code=400)
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
