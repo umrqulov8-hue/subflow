@@ -227,8 +227,6 @@ async def tspay_webhook(request: Request):
         params = body.get("params", {})
         method = body.get("method", "")
 
-        print(f"[TSPAY] method={method} params={params} sig={sig} ts={ts}")
-
         if not params or not method:
             return JSONResponse({"allow": False, "reason": "Invalid request structure"}, status_code=400)
 
@@ -242,10 +240,6 @@ async def tspay_webhook(request: Request):
         expected = "sha256=" + hmac.new(
             TSPAY_WEBHOOK_SECRET.encode(), data_to_sign.encode(), hashlib.sha256
         ).hexdigest()
-
-        print(f"[TSPAY] data_to_sign={data_to_sign}")
-        print(f"[TSPAY] expected={expected}")
-        print(f"[TSPAY] got={sig}")
 
         if not hmac.compare_digest(sig, expected):
             return JSONResponse({"allow": False, "reason": "Invalid signature"}, status_code=401)
@@ -345,7 +339,6 @@ async def create_payment(req_body: CreatePaymentRequest, authorization: str = He
             "amount": 70000,
             "order_id": order_id,
             "redirect_url": APP_URL,
-            "webhook_url": TSPAY_WEBHOOK_URL,
         }
         print(f"[TSPAY] payload={payload}")
 
