@@ -25,7 +25,7 @@ SUPABASE_KEY = "sb_publishable_veNIaaa-jgaKhb3jU3-HqA_u5q4dol2"
 TSPAY_MERCHANT_ID = os.getenv("TSPAY_MERCHANT_ID", "696f9c0bb7854113")
 TSPAY_API_KEY = os.getenv("TSPAY_API_KEY", "7e5082f37ca9f94afcbfe635f9c5147bf58a7b997c4fc499")
 TSPAY_WEBHOOK_SECRET = os.getenv("TSPAY_WEBHOOK_SECRET", "d18cffe08b612c7a09bb7956b5b041b64195029548a98be4b603cc9b6faa612e")
-TSPAY_API_URL = "https://tspay.uz/api/v1/transactions/create/"
+TSPAY_API_URL = "https://api.tspay.uz/api/transactions/"
 APP_URL = os.getenv("APP_URL", "http://localhost:8000")
 TSPAY_WEBHOOK_URL = f"{APP_URL}/webhook/tspay"
 
@@ -341,10 +341,10 @@ async def create_payment(req_body: CreatePaymentRequest, authorization: str = He
 
     try:
         payload = {
+            "merchant_id": TSPAY_MERCHANT_ID,
             "amount": 70000,
-            "access_token": TSPAY_API_KEY,
-            "redirect_url": APP_URL,
-            "comment": f"SubFlow Pro — order {order_id}",
+            "order_id": order_id,
+            "redirect_url": f"{APP_URL}/api/payment-status/{str_order_id}",
         }
         print(f"[TSPAY] payload={payload}")
 
@@ -356,8 +356,7 @@ async def create_payment(req_body: CreatePaymentRequest, authorization: str = He
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "en-US,en;q=0.9",
                 "Content-Type": "application/json",
-                "Origin": "https://tspay.uz",
-                "Referer": "https://tspay.uz/",
+                "Authorization": f"Bearer {TSPAY_API_KEY}",
             },
             timeout=30,
         )
@@ -366,9 +365,8 @@ async def create_payment(req_body: CreatePaymentRequest, authorization: str = He
 
         if resp.status_code == 200:
             data = resp.json()
-            transaction = data.get("transaction", data)
-            cheque_id = transaction.get("cheque_id", "")
-            payment_url = transaction.get("payment_url", "")
+            cheque_id = data.get("cheque_id", "")
+            payment_url = data.get("payment_url", "")
             if cheque_id:
                 payments[str_order_id]["cheque_id"] = cheque_id
                 save_payments(payments)
